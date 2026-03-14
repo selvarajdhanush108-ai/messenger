@@ -3,17 +3,14 @@ const bcrypt = require("bcrypt");
 const generateToken = require("../utils/generateToken");
 
 exports.register = async (req, res) => {
-
   const { username, chatId, email, password } = req.body;
 
   const chatExists = await User.findOne({ chatId });
-
   if (chatExists) {
     return res.status(400).json({ message: "Chat ID already taken" });
   }
 
   const emailExists = await User.findOne({ email });
-
   if (emailExists) {
     return res.status(400).json({ message: "Email already exists" });
   }
@@ -29,31 +26,31 @@ exports.register = async (req, res) => {
 
   res.json({
     id: user._id,
+    token: generateToken(user._id),
+    username: user.username,
     chatId: user.chatId,
-    token: generateToken(user._id)
+    email: user.email
   });
-
 };
 
 exports.login = async (req, res) => {
-
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-
   if (!user) {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
   const match = await bcrypt.compare(password, user.password);
-
   if (!match) {
     return res.status(400).json({ message: "Invalid credentials" });
   }
 
   res.json({
     id: user._id,
-    token: generateToken(user._id)
+    token: generateToken(user._id),
+    username: user.username,
+    chatId: user.chatId,
+    email: user.email
   });
-
 };
